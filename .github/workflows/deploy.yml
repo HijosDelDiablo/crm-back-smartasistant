@@ -115,10 +115,10 @@ jobs:
 
   notify-status:
     needs: [build-and-test, deploy-api, deploy-ollama]
-    if: always()
+    if: always() # Se ejecuta SIEMPRE
     runs-on: ubuntu-latest
     steps:
-      - name: Send success notification
+      - name: Send success email
         if: ${{ success() }}
         uses: dawidd6/action-send-mail@v3
         with:
@@ -129,16 +129,14 @@ jobs:
           subject: ✅ DEPLOY EXITOSO | Repositorio ${{ github.repository }}
           body: |
             El deploy de la rama 'main' (commit ${{ github.sha }}) ha finalizado con éxito.
-
             - Build & Test: ${{ needs.build-and-test.result }}
             - Deploy API: ${{ needs.deploy-api.result }}
             - Deploy Ollama: ${{ needs.deploy-ollama.result }}
-
             Ver deploy: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: ${{ secrets.NOTIFY_EMAIL }}
           from: GitHub Actions <${{ secrets.EMAIL_USER }}>
 
-      - name: Send failure notification
+      - name: Send failure email
         if: ${{ failure() }}
         uses: dawidd6/action-send-mail@v3
         with:
@@ -149,37 +147,19 @@ jobs:
           subject: ❌ DEPLOY FALLIDO | Repositorio ${{ github.repository }}
           body: |
             ¡El deploy de la rama 'main' (commit ${{ github.sha }}) ha FALLADO!
-
             - Build & Test: ${{ needs.build-and-test.result }}
             - Deploy API: ${{ needs.deploy-api.result }}
             - Deploy Ollama: ${{ needs.deploy-ollama.result }}
-
             Revisa los logs aquí: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: ${{ secrets.NOTIFY_EMAIL }}
           from: GitHub Actions <${{ secrets.EMAIL_USER }}>
 
-      - name: Notify Microsoft Teams on Success
-        if: ${{ success() }}
-        uses: jdcargile/ms-teams-notification@v1
+      - name: Notify Microsoft Teams
+        uses: sa-actions/ms-teams-notification@master
         with:
           webhook_url: ${{ secrets.TEAMS_WEBHOOK }}
-          title: "✅ DEPLOY EXITOSO | ${{ github.repository }}"
-          summary: "El deploy de la rama 'main' ha finalizado con éxito."
-          text: |
-            - Build & Test: ${{ needs.build-and-test.result }}
-            - Deploy API: ${{ needs.deploy-api.result }}
-            - Deploy Ollama: ${{ needs.deploy-ollama.result }}
-            [Ver deploy](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-      - name: Notify Microsoft Teams on Failure
-        if: ${{ failure() }}
-        uses: jdcargile/ms-teams-notification@v1
-        with:
-          webhook_url: ${{ secrets.TEAMS_WEBHOOK }}
-          title: "❌ DEPLOY FALLIDO | ${{ github.repository }}"
-          summary: "El deploy de la rama 'main' ha FALLADO. Revisa los logs."
-          text: |
-            - Build & Test: ${{ needs.build-and-test.result }}
-            - Deploy API: ${{ needs.deploy-api.result }}
-            - Deploy Ollama: ${{ needs.deploy-ollama.result }}
-            [Ver logs del deploy](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          status: ${{ job.status }}
+          title: "Deploy: ${{ github.repository }} (${{ github.ref_name }})"
+          summary: "Build: ${{ needs.build-and-test.result }} | Deploy API: ${{ needs.deploy-api.result }} | Deploy Ollama: ${{ needs.deploy-ollama.result }}"
+          github_run_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
