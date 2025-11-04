@@ -154,30 +154,18 @@ jobs:
           to: ${{ secrets.NOTIFY_EMAIL }}
           from: GitHub Actions <${{ secrets.EMAIL_USER }}>
 
-      - name: Notificar Microsoft Teams (Power Automate)
+      - name: Notify Microsoft Teams
+        uses: SimWork/msteams-notification-action@v1
         if: always()
-        run: |
-          if [ "${{ job.status }}" = "success" ]; then
-            ESTADO="✅ ÉXITO"
-          else
-            ESTADO="❌ FALLIDO"
-          fi
-          
-          JSON_PAYLOAD=$(cat <<EOF
-          {
-            "status": "$ESTADO",
-            "repository": "${{ github.repository }}",
-            "branch": "${{ github.ref_name }}",
-            "commit": "${GITHUB_SHA:0:7}",
-            "build_test": "${{ needs.build-and-test.result }}",
-            "deploy_api": "${{ needs.deploy-api.result }}",
-            "deploy_ollama": "${{ needs.deploy-ollama.result }}",
-            "logs_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          }
-          EOF
-          )
-
-          curl -H "Content-Type: application/json" \
-               -d "$JSON_PAYLOAD" \
-               "${{ secrets.TEAMS_WEBHOOK }}"
+        with:
+          webhook_url: ${{ secrets.TEAMS_WEBHOOK }}
+          job_status: ${{ job.status }} 
+          title: "Deploy: ${{ github.repository }} (${{ github.ref_name }}) - ${{ job.status }}"
+          message: |
+            Resultado de los jobs:
+            - Build & Test: **${{ needs.build-and-test.result }}**
+            - Deploy API: **${{ needs.deploy-api.result }}**
+            - Deploy Ollama: **${{ needs.deploy-ollama.result }}**
+            
+            [Ver logs del deploy](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
