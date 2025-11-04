@@ -155,13 +155,13 @@ jobs:
           from: GitHub Actions <${{ secrets.EMAIL_USER }}>
 
       - name: Notify Microsoft Teams
-        uses: SimWork/msteams-notification-action@v1
+        uses: aliencube/microsoft-teams-actions@v0.8.0
         if: always()
         with:
           webhook_url: ${{ secrets.TEAMS_WEBHOOK }}
-          job_status: ${{ job.status }} 
-          title: "Deploy: ${{ github.repository }} (${{ github.ref_name }}) - ${{ job.status }}"
-          message: |
+          text: |
+            Deploy: ${{ github.repository }} (${{ github.ref_name }}) - ${{ job.status }}
+            
             Resultado de los jobs:
             - Build & Test: **${{ needs.build-and-test.result }}**
             - Deploy API: **${{ needs.deploy-api.result }}**
