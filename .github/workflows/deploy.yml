@@ -28,29 +28,25 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
       - name: Build, tag, and push API image to Amazon ECR
         id: build-image-api
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_API }} 
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_API }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f Dockerfile.api .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
       - name: Render Amazon ECS task definition for API
         id: render-api-task-definition
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -58,7 +54,6 @@ jobs:
           task-definition: task-definition-api.json
           container-name: api-node
           image: ${{ steps.build-image-api.outputs.image }}
-
       - name: Deploy Amazon ECS task definition for API
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
@@ -74,29 +69,25 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
       - name: Build, tag, and push Ollama image to Amazon ECR
         id: build-image-ollama
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_OLLAMA }} 
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_OLLAMA }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f Dockerfile.ollama .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
       - name: Render Amazon ECS task definition for Ollama
         id: render-ollama-task-definition
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -104,7 +95,6 @@ jobs:
           task-definition: task-definition-ollama.json
           container-name: servicio-ollama
           image: ${{ steps.build-image-ollama.outputs.image }}
-
       - name: Deploy Amazon ECS task definition for Ollama
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
@@ -135,7 +125,6 @@ jobs:
             Ver deploy: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: ${{ secrets.NOTIFY_EMAIL }}
           from: GitHub Actions <${{ secrets.EMAIL_USER }}>
-
       - name: Send failure email
         if: ${{ failure() }}
         uses: dawidd6/action-send-mail@v3
