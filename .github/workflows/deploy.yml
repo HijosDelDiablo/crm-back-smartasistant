@@ -154,45 +154,30 @@ jobs:
           to: ${{ secrets.NOTIFY_EMAIL }}
           from: GitHub Actions <${{ secrets.EMAIL_USER }}>
 
-      - name: Notificar Microsoft Teams
+      - name: Notificar Microsoft Teams (Power Automate)
         if: always()
         run: |
-          # Determinar color y estado
           if [ "${{ job.status }}" = "success" ]; then
-            COLOR="00FF00"
             ESTADO="✅ ÉXITO"
-            EMOJI="✅"
           else
-            COLOR="FF0000"
             ESTADO="❌ FALLIDO"
-            EMOJI="❌"
           fi
+          
+          JSON_PAYLOAD=$(cat <<EOF
+          {
+            "status": "$ESTADO",
+            "repository": "${{ github.repository }}",
+            "branch": "${{ github.ref_name }}",
+            "commit": "${GITHUB_SHA:0:7}",
+            "build_test": "${{ needs.build-and-test.result }}",
+            "deploy_api": "${{ needs.deploy-api.result }}",
+            "deploy_ollama": "${{ needs.deploy-ollama.result }}",
+            "logs_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+          EOF
+          )
 
-          # Crear el payload JSON
           curl -H "Content-Type: application/json" \
-              -d '{
-                "@type": "MessageCard",
-                "@context": "http://schema.org/extensions",
-                "themeColor": "'"$COLOR"'",
-                "summary": "Estado del Despliegue - '"$ESTADO"'",
-                "sections": [{
-                  "activityTitle": "'"$EMOJI"' Despliegue: '"${{ github.repository }}"' ('"${{ github.ref_name }}"')",
-                  "activitySubtitle": "Estado: '"$ESTADO"'",
-                  "facts": [
-                    {"name": "Build & Test", "value": "'"${{ needs.build-and-test.result }}"'"},
-                    {"name": "Despliegue API", "value": "'"${{ needs.deploy-api.result }}"'"},
-                    {"name": "Despliegue Ollama", "value": "'"${{ needs.deploy-ollama.result }}"'"},
-                    {"name": "Commit", "value": "'"${GITHUB_SHA:0:7}"'"}
-                  ],
-                  "markdown": true
-                }],
-                "potentialAction": [{
-                  "@type": "OpenUri",
-                  "name": "📊 Ver Logs del Despliegue",
-                  "targets": [{
-                    "os": "default",
-                    "uri": "'"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"'"
-                  }]
-                }]
-              }' \
-              "${{ secrets.TEAMS_WEBHOOK }}"
+               -d "$JSON_PAYLOAD" \
+               "${{ secrets.TEAMS_WEBHOOK }}"
+
