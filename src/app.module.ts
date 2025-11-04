@@ -6,7 +6,11 @@ import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { ProductModule } from './product/product.module';
+/*
+//
 import { OrderModule } from './order/order.module';
+*/
+//
 import { DashboardModule } from './dashboard/dashboard.module';
 import { IaChatModule } from './ia-chat/ia-chat.module';
 
@@ -41,7 +45,11 @@ import { IaChatModule } from './ia-chat/ia-chat.module';
     AuthModule,
     UserModule,
     ProductModule,
-    OrderModule,
+   /*
+// 
+OrderModule,
+*/
+//
     IaChatModule,
     DashboardModule,
   ],
