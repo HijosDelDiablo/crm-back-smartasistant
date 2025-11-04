@@ -103,13 +103,24 @@ jobs:
           cluster: ${{ secrets.ECS_CLUSTER_NAME }}
           wait-for-service-stability: true
 
-  notify-status:
+   notify-status:
     needs: [build-and-test, deploy-api, deploy-ollama]
     if: always()
     runs-on: ubuntu-latest
     steps:
+      - name: Determinar estado global
+        id: set-status
+        run: |
+          if [ "${{ needs.build-and-test.result }}" = "success" ] && \
+             [ "${{ needs.deploy-api.result }}" = "success" ] && \
+             [ "${{ needs.deploy-ollama.result }}" = "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send success email
-        if: ${{ success() }}
+        if: ${{ steps.set-status.outputs.status == 'success' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -125,8 +136,9 @@ jobs:
             Ver deploy: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: ${{ secrets.NOTIFY_EMAIL }}
           from: GitHub Actions <${{ secrets.EMAIL_USER }}>
+
       - name: Send failure email
-        if: ${{ failure() }}
+        if: ${{ steps.set-status.outputs.status == 'failure' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -142,10 +154,11 @@ jobs:
             Revisa los logs aquí: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: ${{ secrets.NOTIFY_EMAIL }}
           from: GitHub Actions <${{ secrets.EMAIL_USER }}>
+
       - name: Notificar Microsoft Teams
         if: always()
         run: |
-          if [ "${{ job.status }}" = "success" ]; then
+          if [ "${{ steps.set-status.outputs.status }}" = "success" ]; then
             COLOR="00FF00"
             ESTADO="✅ ÉXITO"
             EMOJI="✅"
