@@ -103,24 +103,13 @@ jobs:
           cluster: ${{ secrets.ECS_CLUSTER_NAME }}
           wait-for-service-stability: true
 
-   notify-status:
+  notify-status:
     needs: [build-and-test, deploy-api, deploy-ollama]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Determinar estado global
-        id: set-status
-        run: |
-          if [ "${{ needs.build-and-test.result }}" = "success" ] && \
-             [ "${{ needs.deploy-api.result }}" = "success" ] && \
-             [ "${{ needs.deploy-ollama.result }}" = "success" ]; then
-            echo "status=success" >> $GITHUB_OUTPUT
-          else
-            echo "status=failure" >> $GITHUB_OUTPUT
-          fi
-
       - name: Send success email
-        if: ${{ steps.set-status.outputs.status == 'success' }}
+        if: needs.build-and-test.result == 'success' && (needs.deploy-api.result == 'success' || needs.deploy-api.result == 'skipped') && (needs.deploy-ollama.result == 'success' || needs.deploy-ollama.result == 'skipped')
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -136,9 +125,9 @@ jobs:
             Ver deploy: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: ${{ secrets.NOTIFY_EMAIL }}
           from: GitHub Actions <${{ secrets.EMAIL_USER }}>
-
+      
       - name: Send failure email
-        if: ${{ steps.set-status.outputs.status == 'failure' }}
+        if: needs.build-and-test.result == 'failure' || needs.deploy-api.result == 'failure' || needs.deploy-ollama.result == 'failure'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -154,34 +143,35 @@ jobs:
             Revisa los logs aquí: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: ${{ secrets.NOTIFY_EMAIL }}
           from: GitHub Actions <${{ secrets.EMAIL_USER }}>
-
+      
       - name: Notificar Microsoft Teams
         if: always()
         run: |
-          if [ "${{ steps.set-status.outputs.status }}" = "success" ]; then
-            COLOR="00FF00"
-            ESTADO="✅ ÉXITO"
-            EMOJI="✅"
-          else
+          # Determinar el estado general del pipeline
+          if [ "${{ needs.build-and-test.result }}" = "failure" ] || [ "${{ needs.deploy-api.result }}" = "failure" ] || [ "${{ needs.deploy-ollama.result }}" = "failure" ]; then
             COLOR="FF0000"
             ESTADO="❌ FALLIDO"
             EMOJI="❌"
+          else
+            COLOR="00FF00"
+            ESTADO="✅ ÉXITO"
+            EMOJI="✅"
           fi
 
-          PAYLOAD=$(cat <<EOF
-          {
+          # Crear el payload JSON usando printf (fish shell compatible)
+          PAYLOAD=$(printf '%s\n' '{
             "@type": "MessageCard",
             "@context": "http://schema.org/extensions",
-            "themeColor": "$COLOR",
-            "summary": "Estado del Despliegue - $ESTADO",
+            "themeColor": "'"$COLOR"'",
+            "summary": "Estado del Despliegue - '"$ESTADO"'",
             "sections": [{
-              "activityTitle": "$EMOJI Despliegue: ${{ github.repository }} (${{ github.ref_name }})",
-              "activitySubtitle": "Estado: $ESTADO",
+              "activityTitle": "'"$EMOJI"' Despliegue: ${{ github.repository }} (${{ github.ref_name }})",
+              "activitySubtitle": "Estado: '"$ESTADO"'",
               "facts": [
                 {"name": "Build & Test", "value": "${{ needs.build-and-test.result }}"},
                 {"name": "Despliegue API", "value": "${{ needs.deploy-api.result }}"},
                 {"name": "Despliegue Ollama", "value": "${{ needs.deploy-ollama.result }}"},
-                {"name": "Commit", "value": "${GITHUB_SHA:0:7}"}
+                {"name": "Commit", "value": "'"${GITHUB_SHA:0:7}"'"}
               ],
               "markdown": true
             }],
@@ -193,9 +183,7 @@ jobs:
                 "uri": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
               }]
             }]
-          }
-          EOF
-          )
+          }')
 
           curl -H "Content-Type: application/json" \
                -d "$PAYLOAD" \
