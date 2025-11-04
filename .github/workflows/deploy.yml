@@ -115,7 +115,7 @@ jobs:
 
   notify-status:
     needs: [build-and-test, deploy-api, deploy-ollama]
-    if: always() # Se ejecuta SIEMPRE
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Send success email
@@ -156,7 +156,7 @@ jobs:
 
       - name: Notify Microsoft Teams
         uses: SimWork/msteams-notification-action@v1
-        if: always() # Se ejecuta siempre
+        if: always()
         with:
           webhook_url: ${{ secrets.TEAMS_WEBHOOK }}
           job_status: ${{ job.status }} 
