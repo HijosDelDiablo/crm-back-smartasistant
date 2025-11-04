@@ -155,11 +155,10 @@ jobs:
           from: GitHub Actions <${{ secrets.EMAIL_USER }}>
 
       - name: Notify Microsoft Teams
-        uses: sa-actions/ms-teams-notification@master
+        uses: jumpp/action-msteams-notification@v2
+        if: always()
         with:
           webhook_url: ${{ secrets.TEAMS_WEBHOOK }}
-
           status: ${{ job.status }}
-          title: "Deploy: ${{ github.repository }} (${{ github.ref_name }})"
-          summary: "Build: ${{ needs.build-and-test.result }} | Deploy API: ${{ needs.deploy-api.result }} | Deploy Ollama: ${{ needs.deploy-ollama.result }}"
-          github_run_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          jobs: ${{ toJSON(needs) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
