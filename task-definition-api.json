@@ -21,39 +21,39 @@
       "secrets": [
         {
           "name": "DATABASE_URL",
-          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:DATABASE_URL::"
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:smartassistant/api-f3ZMLD:DATABASE_URL::"
         },
         {
           "name": "JWT_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:JWT_SECRET::"
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:smartassistant/api-f3ZMLD:JWT_SECRET::"
         },
         {
           "name": "GOOGLE_CLIENT_ID",
-          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:GOOGLE_CLIENT_ID::"
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:smartassistant/api-f3ZMLD:GOOGLE_CLIENT_ID::"
         },
         {
           "name": "GOOGLE_CLIENT_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:GOOGLE_CLIENT_SECRET::"
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:smartassistant/api-f3ZMLD:GOOGLE_CLIENT_SECRET::"
         },
         {
           "name": "GOOGLE_CALLBACK_URL",
-          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:GOOGLE_CALLBACK_URL::"
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:smartassistant/api-f3ZMLD:GOOGLE_CALLBACK_URL::"
         },
         {
           "name": "FRONTEND_URL",
-          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:FRONTEND_URL::"
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:smartassistant/api-f3ZMLD:FRONTEND_URL::"
         },
         {
           "name": "OLLAMA_BASE_URL",
-          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:OLLAMA_BASE_URL::"
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:smartassistant/api-f3ZMLD:OLLAMA_BASE_URL::"
         },
         {
           "name": "OLLAMA_URL",
-          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:OLLAMA_URL::"
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:smartassistant/api-f3ZMLD:OLLAMA_URL::"
         },
         {
           "name": "JWT_EXPIRATION",
-          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:JWT_EXPIRATION::"
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:smartassistant/api-f3ZMLD:JWT_EXPIRATION::"
         }
       ],
       "logConfiguration": {
