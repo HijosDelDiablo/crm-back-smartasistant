@@ -1,0 +1,31 @@
+{
+  "family": "smartassistant-ollama-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "4096",
+  "memory": "8192",
+  "executionRoleArn": "arn:aws:iam::213350056461:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::213350056461:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "servicio-ollama",
+      "image": "213350056461.dkr.ecr.us-east-2.amazonaws.com/smartassistant-ollama:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 11434,
+          "hostPort": 11434,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/smartassistant-ollama",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

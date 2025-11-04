@@ -1,0 +1,69 @@
+{
+  "family": "smartassistant-api-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::213350056461:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::213350056461:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "api-node",
+      "image": "213350056461.dkr.ecr.us-east-2.amazonaws.com/smartassistant-backend:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:DATABASE_URL::"
+        },
+        {
+          "name": "JWT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:JWT_SECRET::"
+        },
+        {
+          "name": "GOOGLE_CLIENT_ID",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:GOOGLE_CLIENT_ID::"
+        },
+        {
+          "name": "GOOGLE_CLIENT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:GOOGLE_CLIENT_SECRET::"
+        },
+        {
+          "name": "GOOGLE_CALLBACK_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:GOOGLE_CALLBACK_URL::"
+        },
+        {
+          "name": "FRONTEND_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:FRONTEND_URL::"
+        },
+        {
+          "name": "OLLAMA_BASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:OLLAMA_BASE_URL::"
+        },
+        {
+          "name": "OLLAMA_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:OLLAMA_URL::"
+        },
+        {
+          "name": "JWT_EXPIRATION",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:213350056461:secret:mh-soluciones/prod-jbFXOz:JWT_EXPIRATION::"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/smartassistant-api",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
