@@ -154,16 +154,45 @@ jobs:
           to: ${{ secrets.NOTIFY_EMAIL }}
           from: GitHub Actions <${{ secrets.EMAIL_USER }}>
 
-      - name: Notify Microsoft Teams
-        uses: aliencube/microsoft-teams-actions@v0.8.0
+      - name: Notificar Microsoft Teams
         if: always()
-        with:
-          webhook_uri: ${{ secrets.TEAMS_WEBHOOK }}
-          title: "Deploy: ${{ github.repository }} (${{ github.ref_name }}) - ${{ job.status }}"
-          text: |
-            Resultado de los jobs:
-            - Build & Test: **${{ needs.build-and-test.result }}**
-            - Deploy API: **${{ needs.deploy-api.result }}**
-            - Deploy Ollama: **${{ needs.deploy-ollama.result }}**
-            
-            [Ver logs del deploy](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        run: |
+          # Determinar color y estado
+          if [ "${{ job.status }}" = "success" ]; then
+            COLOR="00FF00"
+            ESTADO="✅ ÉXITO"
+            EMOJI="✅"
+          else
+            COLOR="FF0000"
+            ESTADO="❌ FALLIDO"
+            EMOJI="❌"
+          fi
+
+          # Crear el payload JSON
+          curl -H "Content-Type: application/json" \
+              -d '{
+                "@type": "MessageCard",
+                "@context": "http://schema.org/extensions",
+                "themeColor": "'"$COLOR"'",
+                "summary": "Estado del Despliegue - '"$ESTADO"'",
+                "sections": [{
+                  "activityTitle": "'"$EMOJI"' Despliegue: '"${{ github.repository }}"' ('"${{ github.ref_name }}"')",
+                  "activitySubtitle": "Estado: '"$ESTADO"'",
+                  "facts": [
+                    {"name": "Build & Test", "value": "'"${{ needs.build-and-test.result }}"'"},
+                    {"name": "Despliegue API", "value": "'"${{ needs.deploy-api.result }}"'"},
+                    {"name": "Despliegue Ollama", "value": "'"${{ needs.deploy-ollama.result }}"'"},
+                    {"name": "Commit", "value": "'"${GITHUB_SHA:0:7}"'"}
+                  ],
+                  "markdown": true
+                }],
+                "potentialAction": [{
+                  "@type": "OpenUri",
+                  "name": "📊 Ver Logs del Despliegue",
+                  "targets": [{
+                    "os": "default",
+                    "uri": "'"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"'"
+                  }]
+                }]
+              }' \
+              "${{ secrets.TEAMS_WEBHOOK }}"
