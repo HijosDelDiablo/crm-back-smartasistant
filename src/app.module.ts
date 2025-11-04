@@ -18,22 +18,17 @@ import { IaChatModule } from './ia-chat/ia-chat.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        const user = configService.get<string>('MONGODB_USER');
-        const pass = configService.get<string>('MONGODB_PASS');
-        const host = configService.get<string>('MONGODB_HOST');
-        const port = configService.get<string>('MONGODB_PORT');
-        const dbName = configService.get<string>('MONGODB_DATABASE');
-        const authSource = configService.get<string>('MONGODB_AUTH_SOURCE');
+        
+        const uri = configService.get<string>('DATABASE_URL');
 
-        const uriLog = `mongodb://${user}:***@${host}:${port}/${dbName}`;
-        console.log(`[Mongoose] Intentando conectar a: ${uriLog}`);
+        console.log(`[Mongoose] Intentando conectar a: ${uri}`);
+
+        if (!uri) {
+          console.error("[Mongoose] ERROR: La variable de entorno DATABASE_URL no está definida o no se pudo leer.");
+        }
 
         return {
-          uri: `mongodb://${host}:${port}`,
-          user: user,
-          pass: pass,
-          dbName: dbName,
-          authSource: authSource,
+          uri: uri,
         };
       },
     }),
