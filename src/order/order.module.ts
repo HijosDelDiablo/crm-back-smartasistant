@@ -1,6 +1,3 @@
-/*
-//
-
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { OrderService } from './order.service';
@@ -22,6 +19,3 @@ import { User, UserSchema } from '../user/schemas/user.schema';
   exports: [OrderService],
 })
 export class OrderModule {}
-
-*/
-//

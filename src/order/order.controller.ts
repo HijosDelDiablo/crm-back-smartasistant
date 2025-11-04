@@ -1,6 +1,3 @@
-/*
-//
-
 import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto, AssignOrderDto, UpdateStatusDto } from './dto/order.dto';
@@ -83,6 +80,3 @@ export class OrderController {
     return this.orderService.findOneForVendedor(id, user._id);
   }
 }
-
-*/
-//
