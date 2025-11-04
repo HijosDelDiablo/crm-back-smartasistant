@@ -1,4 +1,3 @@
-#deploy and build completo
 name: CI/CD Pipeline to AWS
 
 on:
@@ -113,3 +112,74 @@ jobs:
           service: ${{ secrets.ECS_SERVICE_NAME_OLLAMA }}
           cluster: ${{ secrets.ECS_CLUSTER_NAME }}
           wait-for-service-stability: true
+
+  notify-status:
+    needs: [build-and-test, deploy-api, deploy-ollama]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send success notification
+        if: ${{ success() }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: ✅ DEPLOY EXITOSO | Repositorio ${{ github.repository }}
+          body: |
+            El deploy de la rama 'main' (commit ${{ github.sha }}) ha finalizado con éxito.
+
+            - Build & Test: ${{ needs.build-and-test.result }}
+            - Deploy API: ${{ needs.deploy-api.result }}
+            - Deploy Ollama: ${{ needs.deploy-ollama.result }}
+
+            Ver deploy: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          to: ${{ secrets.NOTIFY_EMAIL }}
+          from: GitHub Actions <${{ secrets.EMAIL_USER }}>
+
+      - name: Send failure notification
+        if: ${{ failure() }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: ❌ DEPLOY FALLIDO | Repositorio ${{ github.repository }}
+          body: |
+            ¡El deploy de la rama 'main' (commit ${{ github.sha }}) ha FALLADO!
+
+            - Build & Test: ${{ needs.build-and-test.result }}
+            - Deploy API: ${{ needs.deploy-api.result }}
+            - Deploy Ollama: ${{ needs.deploy-ollama.result }}
+
+            Revisa los logs aquí: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          to: ${{ secrets.NOTIFY_EMAIL }}
+          from: GitHub Actions <${{ secrets.EMAIL_USER }}>
+
+      - name: Notify Microsoft Teams on Success
+        if: ${{ success() }}
+        uses: jdcargile/ms-teams-notification@v1
+        with:
+          webhook_url: ${{ secrets.TEAMS_WEBHOOK }}
+          title: "✅ DEPLOY EXITOSO | ${{ github.repository }}"
+          summary: "El deploy de la rama 'main' ha finalizado con éxito."
+          text: |
+            - Build & Test: ${{ needs.build-and-test.result }}
+            - Deploy API: ${{ needs.deploy-api.result }}
+            - Deploy Ollama: ${{ needs.deploy-ollama.result }}
+            [Ver deploy](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Notify Microsoft Teams on Failure
+        if: ${{ failure() }}
+        uses: jdcargile/ms-teams-notification@v1
+        with:
+          webhook_url: ${{ secrets.TEAMS_WEBHOOK }}
+          title: "❌ DEPLOY FALLIDO | ${{ github.repository }}"
+          summary: "El deploy de la rama 'main' ha FALLADO. Revisa los logs."
+          text: |
+            - Build & Test: ${{ needs.build-and-test.result }}
+            - Deploy API: ${{ needs.deploy-api.result }}
+            - Deploy Ollama: ${{ needs.deploy-ollama.result }}
+            [Ver logs del deploy](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
