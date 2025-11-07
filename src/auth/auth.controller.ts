@@ -48,7 +48,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const result = await this.authService.loginConGoogle(req.user);
-    console.log("HOLA DESDE LA NUEVA TEST FIX HOLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    console.log("Adioooooooooooooooooooooos");
     
     if (result.redirect) {
       res.redirect(result.url);
